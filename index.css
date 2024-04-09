@@ -93,6 +93,10 @@ input[type="button"] {
     width: 100%;
 }
 
+input[type="button"]:disabled {
+    opacity: 0.75;
+}
+
 ::selection {
     background-color: var(--accent-dim);
     color: var(--text-bright);

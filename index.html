@@ -14,10 +14,10 @@
     </head>
     <body>
         <main>
-            <section>
+            <header>
                 <h1>switchboard</h1>
                 <p>simple discord rna download tool</p>
-            </section>
+            </header>
             <hr>
             <section>
                 <label for="version-input">version string (e.g. 226201)</label>
@@ -32,9 +32,12 @@
 
                 <input type="button" id="download-button" value="download">
             </section>
+            <footer>
+                <p>made with ❤ by marsh</p>
+            </footer>
         </main>
 
         <!-- script in body because i didn't want to deal with DOMContentLoaded -->
-        <script src="index.js"></script>
+        <script type="module" src="index.js"></script>
     </body>
 </html>

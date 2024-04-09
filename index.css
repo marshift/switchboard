@@ -50,7 +50,15 @@ h2 {
 }
 
 label {
+    color: var(--text-dim);
     font-size: small;
+}
+
+footer {
+    color: var(--text-dim);
+    font-size: small;
+    text-align: center;
+    margin-top: 0.5rem;
 }
 
 input[type="text"], select {
@@ -60,6 +68,7 @@ input[type="text"], select {
     border: none;
     border-radius: 8px;
     outline: none;
+    appearance: none;
     padding: 0.5rem;
     margin-top: 4px;
     margin-bottom: 1rem;
@@ -76,10 +85,15 @@ input::placeholder {
 
 input[type="button"] {
     background-color: var(--accent);
-    font-weight: medium;
+    color: var(--background-secondary);
     border: none;
     outline: none;
     border-radius: 9999px;
     padding: 0.5rem;
     width: 100%;
+}
+
+::selection {
+    background-color: var(--accent-dim);
+    color: var(--text-bright);
 }

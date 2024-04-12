@@ -1,6 +1,5 @@
 // Imports
-import JSZip from "https://esm.sh/@progress/jszip-esm@1.0.3";
-import FileSaver from "https://esm.sh/file-saver@2.0.5";
+import { Zip, ZipDeflate } from "https://esm.sh/fflate@0.8.2";
 
 // Constants
 const CORS_PROXY = "https://shcors.uwu.network/"; // TODO: Use my own proxy
@@ -19,11 +18,61 @@ const FILE_NAMES = [
 
 // Little fetch wrapper
 async function mFetch(url, options) {
-    const req = await fetch(CORS_PROXY + url, options);
-    if (!req.ok) throw new Error("Request returned non-ok status code");
+    const res = await fetch(CORS_PROXY + url, options);
+    if (!res.ok) throw new Error("Response gave non-ok status code");
 
-    return req;
+    return res;
 }
+
+// Love me some file downloading (I hate this)
+function downloadFile(data, fileName) {
+    const downloadable = document.createElement("a");
+    downloadable.href = URL.createObjectURL(new Blob([data]));
+    downloadable.download = fileName;
+    downloadable.click();
+    downloadable.remove();
+}
+
+// Split APK creation logic
+const createAPKZip = (version) => new Promise(async (resolve, reject) => {
+    const parts = [];
+
+    const zip = new Zip((err, data, done) => {
+        if (err) reject(err);
+        parts.push(data);
+
+        if (done) {
+            const final = new Uint8Array(parts.map((i) => i.length).reduce((a, b) => a + b, 0));
+            let offset = 0;
+
+            for (const part of parts) {
+                final.set(part, offset);
+                offset += part.length;
+            }
+            
+            resolve(final);
+        }
+    });
+
+    await Promise.all(FILE_NAMES.map(async (fileName) => {
+        const apkFile = new ZipDeflate(`${fileName}.apk`, { level: 9 });
+        zip.add(apkFile);
+
+        const fileRes = await mFetch(TRACKER_URL + `/download/${version}/${fileName}`);
+
+        for await (const chunk of fileRes.body) {
+            console.log(`got chunk of ${fileName}`);
+            apkFile.push(chunk);
+        }
+
+        apkFile.push("", true);
+
+        console.log(`downloaded ${fileName}`);
+        return apkFile;
+    }));
+
+    zip.end();
+});
 
 // Get some elements
 const versionInput = document.getElementById("version-input");
@@ -53,40 +102,20 @@ versionSelect.addEventListener("change", () => {
 
 // Download handler
 downloadButton.addEventListener("click", async () => {
-    const zip = new JSZip();
     const version = versionInput.value;
-    let failed = false;
 
     downloadButton.disabled = true;
-    downloadButton.value = `starting download for ${version}`;
+    downloadButton.value = `downloading ${version}...`;
 
-    for (let fileName of FILE_NAMES) {
-        const fileWithExt = `${fileName}.apk`;
-        downloadButton.value = `downloading ${fileWithExt}`;
-        
-        try {
-            const fileReq = await mFetch(TRACKER_URL + `/download/${version}/${fileName}`);
-            const fileData = await fileReq.arrayBuffer();
-            zip.file(`${fileWithExt}`, fileData);
-            console.log(`downloaded ${fileName} for ${version}`);
-        } catch(error) {
-            failed = true;
-            
-            const msg = `failed to download ${fileWithExt} for ${version}!\n${error}`;
-            console.error(msg);
-            alert(msg);
-            break;
-        }
-    };
-
-    if (!failed) {
-        downloadButton.value = `generating zip...`;
-        const zipData = await zip.generateAsync({ type: "arraybuffer" });
-        const zipFile = new File([zipData], `Discord-${version}.zip`);
-        FileSaver.saveAs(zipFile);
-    }
-
-    downloadButton.disabled = false;
-    downloadButton.value = failed ? "failed :<" : "success :D";
-    setTimeout(() => downloadButton.value = "download", 2000);
+    createAPKZip(version).then((zip) => {
+        downloadFile(zip, `Discord-${version}.zip`);
+        downloadButton.value = "success :D";
+    }).catch((err) => {
+        console.error(err);
+        alert("failed - check the console?");
+        downloadButton.value = "failed :<";
+    }).finally(() => {
+        setTimeout(() => downloadButton.value = "download", 2000);
+        downloadButton.disabled = false;
+    });
 });

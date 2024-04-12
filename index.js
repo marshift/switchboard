@@ -60,11 +60,7 @@ const createAPKZip = (version) => new Promise(async (resolve, reject) => {
 
         const fileRes = await mFetch(TRACKER_URL + `/download/${version}/${fileName}`);
 
-        for await (const chunk of fileRes.body) {
-            console.log(`got chunk of ${fileName}`);
-            apkFile.push(chunk);
-        }
-
+        for await (const chunk of fileRes.body) apkFile.push(chunk);
         apkFile.push("", true);
 
         console.log(`downloaded ${fileName}`);

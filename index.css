@@ -110,10 +110,9 @@ button:disabled {
     top: 0;
     left: 0;
     height: 100%;
-    background-color: var(--acent-alt);
+    background-color: var(--accent-alt);
     border-radius: 1rem;
     min-width: 2rem;
-    transition: width 1;
 }
 
 ::selection {

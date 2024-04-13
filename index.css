@@ -9,6 +9,7 @@
     --text-normal: #ffc9e5;
     --text-dim: #cca0b7;
     --accent: #ff0a88;
+    --accent-alt: #db0a74;
     --accent-dim: #ab1862;
 }
 
@@ -83,18 +84,36 @@ input::placeholder {
     color: var(--text-dim);
 }
 
-input[type="button"] {
+button {
     background-color: var(--accent);
     color: var(--background-secondary);
     border: none;
     outline: none;
-    border-radius: 9999px;
+    border-radius: 1rem;
     padding: 0.5rem;
     width: 100%;
+    cursor: pointer;
+    position: relative;
 }
 
-input[type="button"]:disabled {
-    opacity: 0.75;
+button:disabled {
+    cursor: initial;
+}
+
+#download-status {
+    z-index: 1;
+    position: relative;
+}
+
+#download-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background-color: var(--acent-alt);
+    border-radius: 1rem;
+    min-width: 2rem;
+    transition: width 1;
 }
 
 ::selection {

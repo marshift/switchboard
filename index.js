@@ -54,13 +54,20 @@ const createAPKZip = (version) => new Promise(async (resolve, reject) => {
         }
     });
 
-    await Promise.all(FILE_NAMES.map(async (fileName) => {
+    const responses = await Promise.all(FILE_NAMES.map(async (fileName) => [await mFetch(TRACKER_URL + `/download/${version}/${fileName}`), fileName]));
+
+    let done = 0;
+    const max = responses.map(([r,]) => r.headers.get("Content-Length")).reduce((a, b) => a + parseInt(b), 0);
+
+    await Promise.all(responses.map(async ([response, fileName]) => {
         const apkFile = new ZipDeflate(`${fileName}.apk`, { level: 9 });
         zip.add(apkFile);
 
-        const fileRes = await mFetch(TRACKER_URL + `/download/${version}/${fileName}`);
-
-        for await (const chunk of fileRes.body) apkFile.push(chunk);
+        for await (const chunk of response.body) {
+            done += chunk.length;
+            apkFile.push(chunk);
+            downloadBar.style.width = `${done / max * 100}%`;
+        }
         apkFile.push("", true);
 
         console.log(`downloaded ${fileName}`);
@@ -74,6 +81,8 @@ const createAPKZip = (version) => new Promise(async (resolve, reject) => {
 const versionInput = document.getElementById("version-input");
 const versionSelect = document.getElementById("version-select");
 const downloadButton = document.getElementById("download-button");
+const downloadStatus = document.getElementById("download-status");
+const downloadBar = document.getElementById("download-bar");
 
 // Attempt to fetch latest versions
 let latestVersions;
@@ -101,17 +110,22 @@ downloadButton.addEventListener("click", async () => {
     const version = versionInput.value;
 
     downloadButton.disabled = true;
-    downloadButton.value = `downloading ${version}...`;
+    downloadStatus.innerText = `downloading ${version}...`;
+    downloadBar.style.display = "initial";
 
     createAPKZip(version).then((zip) => {
         downloadFile(zip, `Discord-${version}.zip`);
-        downloadButton.value = "success :D";
+        downloadStatus.innerText = "success :D";
     }).catch((err) => {
         console.error(err);
         alert("failed - check the console?");
-        downloadButton.value = "failed :<";
+        downloadStatus.innerText = "failed :<";
     }).finally(() => {
-        setTimeout(() => downloadButton.value = "download", 2000);
+        setTimeout(() => {
+            downloadStatus.innerText = "download";
+            downloadBar.style.width = null;
+            downloadBar.style.display = "none";
+        }, 2000);
         downloadButton.disabled = false;
     });
 });

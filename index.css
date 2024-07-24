@@ -1,103 +1,17 @@
-@import url("https://meyerweb.com/eric/tools/css/reset/reset.css");
-
-:root {
-    --background-primary: #391f45;
-    --background-secondary: #351f43;
-    --background-tertiary: #321f42;
-    --text-header: #fde2f0;
-    --text-bright: #ffd3ea;
-    --text-normal: #ffc9e5;
-    --text-dim: #cca0b7;
-    --accent: #ff0a88;
-    --accent-alt: #db0a74;
-    --accent-dim: #ab1862;
-}
-
-html {
-    box-sizing: border-box;
-}
-
-*, *:before, *:after {
-    box-sizing: inherit;
-}
+@import url("https://marshift.github.io/murky/out.css");
 
 body {
-    background-color: var(--background-tertiary);
-    color: var(--text-bright);
-    font-family: "Roboto";
-    height: 100vh;
     max-width: 720px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-main {
-    padding: 0.5rem;
-}
-
-hr {
-    border: 1px solid var(--accent-dim);
-    border-radius: 16px;
-}
-
-h1 {
-    color: var(--text-header);
-    font-size: x-large;
-}
-
-h2 {
-    color: var(--text-header);
-    font-size: large;
-}
-
-label {
-    color: var(--text-dim);
-    font-size: small;
+    margin: 0 auto;
 }
 
 footer {
-    color: var(--text-dim);
-    font-size: small;
     text-align: center;
     margin-top: 0.5rem;
 }
 
-input[type="text"], select {
-    display: block;
-    background-color: var(--background-primary);
-    color: inherit;
-    border: none;
-    border-radius: 8px;
-    outline: none;
-    appearance: none;
-    padding: 0.5rem;
-    margin-top: 4px;
-    margin-bottom: 1rem;
-    width: 100%;
-}
-
-input[type="text"]:focus, select:focus {
-    outline: 2px solid var(--accent-dim);
-}
-
-input::placeholder {
-    color: var(--text-dim);
-}
-
-button {
-    background-color: var(--accent);
-    color: var(--background-secondary);
-    border: none;
-    outline: none;
-    border-radius: 1rem;
-    padding: 0.5rem;
-    width: 100%;
-    cursor: pointer;
+#download-button {
     position: relative;
-}
-
-button:disabled {
-    cursor: initial;
 }
 
 #download-status {
@@ -113,9 +27,4 @@ button:disabled {
     background-color: var(--accent-alt);
     border-radius: 1rem;
     min-width: 2rem;
-}
-
-::selection {
-    background-color: var(--accent-dim);
-    color: var(--text-bright);
 }

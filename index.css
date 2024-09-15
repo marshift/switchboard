@@ -25,6 +25,6 @@ footer {
     left: 0;
     height: 100%;
     background-color: var(--accent-alt);
-    border-radius: 1rem;
+    border-radius: var(--radii-large);
     min-width: 2rem;
 }

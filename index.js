@@ -10,7 +10,6 @@ const FILE_NAMES = [
 	"config.x86",
 	"config.hdpi",
 	"config.xxhdpi",
-	"config.de",
 	"config.en",
 ];
 

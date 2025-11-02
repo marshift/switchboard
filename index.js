@@ -1,8 +1,6 @@
-// Imports
 import { Zip, ZipDeflate } from "https://esm.sh/fflate@0.8.2";
 
-// Constants
-const CORS_PROXY = "https://shcors.uwu.network/"; // TODO: Use my own proxy
+const CORS_PROXY = "https://shcors.uwu.network/"; // TODO: Use my own CORS proxy
 const TRACKER_URL = "https://tracker.vendetta.rocks/tracker";
 const FILE_NAMES = [
 	"base",
@@ -16,15 +14,12 @@ const FILE_NAMES = [
 	"config.en",
 ];
 
-// Little fetch wrapper
-async function mFetch(url, options) {
+async function safeFetch(url, options) {
 	const res = await fetch(CORS_PROXY + url, options);
-	if (!res.ok) throw new Error("Response gave non-ok status code");
-
+	if (!res.ok) throw new Error(`Request returned non-ok status (${res.status} ${res.statusText})`);
 	return res;
 }
 
-// Love me some file downloading (I hate this)
 function downloadFile(data, fileName) {
 	const downloadable = document.createElement("a");
 	downloadable.href = URL.createObjectURL(new Blob([data]));
@@ -56,8 +51,11 @@ const createAPKZip = (version) =>
 		});
 
 		const responses = await Promise.all(
-			FILE_NAMES.map(async (fileName) => [await mFetch(TRACKER_URL + `/download/${version}/${fileName}`), fileName]),
-		);
+			FILE_NAMES.map(async (fileName) => [
+				await safeFetch(TRACKER_URL + `/download/${version}/${fileName}`),
+				fileName,
+			]),
+		).catch(reject);
 
 		let done = 0;
 		const max = responses.map(([r]) => r.headers.get("Content-Length")).reduce((a, b) => a + parseInt(b), 0);
@@ -80,27 +78,22 @@ const createAPKZip = (version) =>
 		zip.end();
 	});
 
-// Get some elements
 const versionInput = document.getElementById("version-input");
 const versionSelect = document.getElementById("version-select");
 const downloadButton = document.getElementById("download-button");
 const downloadStatus = document.getElementById("download-status");
 const downloadBar = document.getElementById("download-bar");
 
-// Attempt to fetch latest versions
 let latestVersions;
 
 try {
-	const data = await (await mFetch(TRACKER_URL + "/index")).json();
+	const data = await safeFetch(TRACKER_URL + "/index").then((r) => r.json());
 	latestVersions = data.latest;
+	versionInput.value = latestVersions.stable;
 } catch {
 	alert("failed to fetch latest versions from tracker, try reloading?");
 }
 
-// Set the version string textbox to the latest stable if we have it
-versionInput.value = latestVersions.stable;
-
-// Add select handlers
 versionSelect.addEventListener("change", () => {
 	if (!latestVersions) return;
 
@@ -108,7 +101,6 @@ versionSelect.addEventListener("change", () => {
 	versionInput.value = latestVersions[versionType];
 });
 
-// Download handler
 downloadButton.addEventListener("click", async () => {
 	const version = versionInput.value;
 
@@ -116,7 +108,7 @@ downloadButton.addEventListener("click", async () => {
 	downloadStatus.innerText = `downloading ${version}...`;
 	downloadBar.style.display = "initial";
 
-	createAPKZip(version).then((zip) => {
+	await createAPKZip(version).then((zip) => {
 		downloadFile(zip, `Discord-${version}.zip`);
 		downloadStatus.innerText = "success :D";
 	}).catch((err) => {
